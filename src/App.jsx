@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; 
+
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './components/Home';
+import Pokedex from './components/Pokedex';
+import Item from './components/Item';
+import ProtectedRoutes from './components/ProtectedRoutes';
+import LoadingScreen from './components/LoadingScreen';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState(null);
+
+
+  useEffect(() => {
+   
+    setTimeout(() => {
+      axios.get('tu-url-de-api')
+        .then(response => {
+          setData(response.data);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          setIsLoading(false);
+        });
+    }, 5000);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+
+
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="App">
+
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route element={<ProtectedRoutes />}>
+            <Route path="/pokedex" element={<Pokedex />} />
+            <Route path="/pokedex/:id" element={<Item />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </div>
+  );
 }
 
-export default App
+export default App;
